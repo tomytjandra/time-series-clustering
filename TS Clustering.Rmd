@@ -146,7 +146,7 @@ The Euclidean distance results in the sum of the point-to-point distances (gray 
 Dynamic Time Warping (DTW) gives more robustness to the similarity computation. By this method, also time series of different length can be compared, because it replaces the one-to-one point comparison, used in Euclidean distance, with a many-to-one (and viceversa) comparison. The main feature of this distance measure is that it allows to recognize similar shapes, even if they present signal transformations, such as shifting and/or scaling. [^1]
 
 ```{r, out.width = "80%", echo = FALSE, fig.align = "center", fig.cap="Difference between DTW distance and Euclidean distance (green lines represent mapping between points of time series $T$ and $S$)"}
-knitr::include_graphics("assets/dtw-euclidan.png")
+knitr::include_graphics("assets/dtw-euclidean.png")
 ```
 
 In general, DTW is a method that calculates an optimal match between two given sequences (e.g. time series) with certain restriction and rules (comes from wiki):
@@ -251,7 +251,7 @@ order <-
 head(order)
 ```
 
-In the pre-processing stage, especially in calculations similarity between data, it's a good way to normalize all the variables to bring them down to a similar scale. So we can compare two series patterns, instead of looking at their true values. To make it clear, please 
+In the pre-processing stage, especially in calculations similarity between data, it's a good way to normalize all the variables to bring them down to a similar scale. So we can compare two series patterns, instead of looking at their true values. To make it clear, please ...
 
 ```{r}
 order_scaled <- scale(order)
@@ -315,7 +315,7 @@ We are going to focus more on AGNES since it is the most common type of hierarch
 
 AGNES is a bottom-up approach of hierarchical clustering. The algorithm is in fact very simple, it begins with every observation as a single cluster, we can refer to this state as the leaves on the dendrogram. Let $N$ be the number of observations. At each of the $N-1$ steps, the closest two (or the least dissimilar) clusters will be merged as a single cluster - producing one less cluster.
 
-Before any further concept, let's compare the result of Agglomerative clustering using Euclidean versus Dynamic Time Warping. We use `agnes()` function from `cluster` package. The default linkage method is "average", we will discuss this concept later on this course. Dendogram can be plotted by specifying the parameter `which.plots = 2` inside `plot()` function. Note: we can alternatively use `hclust()` from `stats` package that should produce the same clusters.
+Before any further concept, let's compare the result of Agglomerative clustering using Euclidean versus Dynamic Time Warping. We use [`agnes()`](https://www.rdocumentation.org/packages/cluster/versions/2.1.0/topics/agnes) function from `cluster` package. The default linkage method is "average", we will discuss this concept later on this course. Dendogram can be plotted by specifying the parameter `which.plots = 2` inside `plot()` function. Note: we can alternatively use [`hclust()`](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/hclust) from `stats` package that should produce the same clusters.
 
 ```{r fig.width=18, fig.height=12}
 par(mfrow = c(1, 2))
@@ -397,7 +397,7 @@ A divisive algorithm that avoids these problems was proposed by Macnaughton Smit
 
 The split algorithm continues until all observations have zero dissimilarity, or in other words, each observation is a single cluster.
 
-The function `diana()` from the `cluster` package allows us to perform divisive hierarchical clustering. The algorithm is fully described by Kaufman and Rousseeuw (1990) [^5]. Let's compare and contrast the result of DIANA with the AGNES with complete linkage (`dtw_agnes_complete`) we've created previously:
+The function [`diana()`](https://www.rdocumentation.org/packages/cluster/versions/2.1.0/topics/diana) from the `cluster` package allows us to perform divisive hierarchical clustering. The algorithm is fully described by Kaufman and Rousseeuw (1990) [^5]. Let's compare and contrast the result of DIANA with the AGNES with complete linkage (`dtw_agnes_complete`) we've created previously:
 
 ```{r fig.width=18, fig.height=12}
 par(mfrow = c(1, 2))
@@ -451,20 +451,67 @@ all(clust_k == clust_h) # should produce the same results
 
 # Determine optimal clusters
 
-How can we be sure that the chosen value of `k` or `h` is the optimal one? Fortunately, similar approach can be used to evaluate a cluster, one of them has been discussed in the previous course on Unsupervised Learning - the Elbow Method using scree plot.
+The agglomerative and divisive processes we have just described provide a way to generate hierarchical clustering. However, how can we be sure that the chosen value of `k` or `h` is the optimal one? We still need to find a way to determine final clustering between all possible number of clusters. Several approaches can be used to evaluate a cluster, one of them has been discussed in the previous course on Unsupervised Learning - using a scree plot.
+
+Recall that in k-means clustering we expect the largest drop in Total Within Cluster Sum of Squares (WCSS), where the "elbow" is formed. Instead, in hierarchical clustering, we can identify the “largest gap” as possible candidates for cuts.
+
+```{r, out.width = "80%", echo = FALSE, fig.align = "center", fig.cap="Largest Gap Method [^7]"}
+knitr::include_graphics("assets/largest-gap.jpg")
+```
 
 ## Scree Plot
 
+Let's define our own `scree_plot_hc()` function which takes the `hc` object and `which.plots` to be plotted:
+
+- `which.plots = 1`: an interactive scree plot that capture the height of the dendrogram for each number of clusters.
+- `which.plots = 2`: a static bar plot which displays the top 10 number of clusters resulting in the largest height gap of dendrogram.
+
 ```{r}
-fviz_nbclust(x = t(order_scaled),
-             FUN = hcut,
-             method = "wss",
-             diss = dtw_agnes_complete$diss)
+scree_plot_hc <- function(hc, which.plots = 1) {
+  df <-
+    data.frame(k = 1:length(hc$height),
+               h = rev(sort(hc$height))) %>% 
+    mutate(gap = abs(h - lag(h)))
+  
+  if (which.plots == 1) {
+    
+    p <- ggplot(df, aes(x = k, y = h)) +
+      geom_line(color = 'blue') +
+      geom_point(size = 0.75) +
+      labs(x = "Number of clusters k",
+           y = "Height",
+           title = "Scree Plot") +
+      theme_classic()
+    
+    ggplotly(p)
+    
+  } else if (which.plots == 2) {
+    
+    df %>% 
+      arrange(desc(gap)) %>% 
+      top_n(10) %>% 
+      ggplot(aes(x = reorder(k, -gap), y = gap)) +
+      geom_col() +
+      labs(x = "Number of clusters k",
+           y = "Height Gap",
+           title = "Largest Gap Method") +
+      theme_classic()
+    
+  }
+}
+```
+
+```{r}
+scree_plot_hc(dtw_agnes_complete, which.plots = 1)
+```
+
+```{r}
+scree_plot_hc(dtw_agnes_complete, which.plots = 2)
 ```
 
 **Discussion**
 
-Based on the elbow method that you've learned on the previous course, what is the optimal number of clusters `k`?
+Based on the definition of largest gap method, what is the optimal number of clusters `k`?
 
 ## Silhouette
 
@@ -488,25 +535,27 @@ The silhouette plot above shows there is one "outlier" in the first cluster whic
 summary(sil)
 ```
 
+Let's define our own `silhouette_plot()` function which takes the `hc` object and `distance` matrix to be plotted. The optimal number of clusters is the one which gives the maximum average silhouette width.
+
 ```{r}
 silhouette_plot <- function(hc, distance) {
   s <- NULL
   n <- nrow(distance)
   for(k in 2:(n-1)) {
-    sil <- silhouette(cutree(hc, k=k), distance)
-    s[k] <- summary(sil)$si.summary[4] # average silhouette width
+    sil <- silhouette(cutree(hc, k = k), distance)
+    s[k] <- summary(sil)$si.summary[4] # get average silhouette width
   }
   
   df <- data.frame(k = 2:(n-1), sil = s[-1]) %>% 
     arrange(desc(sil))
   
-  p <- df %>% 
-    ggplot(aes(x = k, y = sil)) +
+  p <- ggplot(df, aes(x = k, y = sil)) +
     geom_line(color = 'blue') +
     geom_vline(xintercept = head(df, 1)$k, alpha = 0.5) +
     geom_point(size = 0.75) +
     labs(x = "Number of clusters k",
-         y = "Average silhouette width") +
+         y = "Average silhouette width",
+         title = "Silhouette Method") +
     theme_classic()
   
   ggplotly(p) %>%
@@ -518,7 +567,7 @@ silhouette_plot <- function(hc, distance) {
 silhouette_plot(dtw_agnes_complete, dtw)
 ```
 
-The highest average silhouette width is achieved when `k = 9`, but too many clusters can cause too few members in each cluster. Instead, we choose a smaller number of clusters yet the average silhouette width is closer the highest.
+The maximum average silhouette width is achieved when `k = 9`, but too many clusters can cause too few members in each cluster. Instead, we choose a smaller number of clusters yet the average silhouette width is closer the highest.
 
 # Insights
 
@@ -590,3 +639,5 @@ Every of those decisions can affect how the results are obtained. In real practi
 [^5]: [Kaufman, Leonard, and Peter J Rousseeuw. 2009. Finding Groups in Data: An Introduction to Cluster Analysis. Vol. 344. John Wiley & Sons.]()
 
 [^6]: [Gareth James, Daniela Witten, Trevor Hastie, Robert Tibshirani. An Introduction to Statistical Learning : with Applications in R. New York :Springer, 2013.](http://faculty.marshall.usc.edu/gareth-james/ISL/)
+
+[^7]: [Towards Data Science. Hierarchical Clustering Cheatsheet](https://www.statsandr.com/blog/files/Hierarchical-clustering-cheatsheet.pdf)
