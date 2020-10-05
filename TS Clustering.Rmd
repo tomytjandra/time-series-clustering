@@ -29,14 +29,19 @@ knitr::opts_chunk$set(
 options(scipen = 9999)
 ```
 
+<style>
+body {
+text-align: justify}
+</style>
+
 # Preface {.tabset}
 
 ## Training Objectives
 
-This is the ___ course of _Permata Bank_ Corporate Training Workshops on **Machine Learning Specialization**. The primary objective of this course is to provide a comprehensive implementation for time series clustering analysis to **understand the process of grouping time series data into similar trend and seasonal pattern** using programming language R. The syllabus covers:
+This course is specially curated for _Permata Bank_ Corporate Training Workshops on **Machine Learning Specialization**. The primary objective of this course is to provide a comprehensive implementation for time series clustering analysis to **understand the process of grouping time series data into a similar pattern** using the R programming language. The syllabus covers:
 
 * **Overview of Clustering**
-    
+
 * **Time Series Clustering**
     + Data Collection
     + Preprocessing data time series
@@ -51,11 +56,11 @@ This is the ___ course of _Permata Bank_ Corporate Training Workshops on **Machi
       - Linkage
     + Divisive Analysis (DIANA)
       - Divisive Coefficient (DC)
-    + Working with Dendograms
+    + Working with Dendrograms
 
 * **Determine Optimal Cluster**
     + Scree plot
-    + Silhoutte
+    + Silhouette
     
 * **Communicate insights for business needs**
 
@@ -98,37 +103,36 @@ library(dendextend)
 
 Cluster analysis is one of the tools in the data mining process that aims to group objects into a cluster. The cluster itself is a group or a set of data objects that are similar to each other in the same group. The purpose of cluster analysis is not to correlate objects one with another object, but to identify a group of objects which have similarities and distinctive characteristics that can be separated from other groups.
 
-Objects that are in the same cluster are relatively more homogeneous than objects that are in different clusters. A number of groups that can be Identified depending on the lot and the variance of the object data. The cluster results are said to be good with the following characteristics: 
+Objects that are in the same cluster are relatively more homogeneous than objects that are in different clusters. Several groups that can be identified depending on the lot and the variance of the object data. The cluster results are said to be good with the following characteristics: 
 
 1. Has great homogeneity between members in the same cluster (within a cluster).
-2. Has great heterogeneity between one cluster and another
-(Between-cluster)
+2. Has great heterogeneity between one cluster and another (between-cluster).
 
 **Key elements of the definition**
 
-- data objects
-- group
-- similarity
+- Data objects
+- Group
+- Similarity
 
 # Time Series Clustering
 
-In the previous chapter clustering analysis module was applied on static data whose features did not change over time. Today many applications store data for long periods of time. As a result, time series data is created in various fields. Clustering can be applied to this time series to gain insight into the data. For example, retailers can group product sales time series to determine which products exhibit similar sales behavior. However, as seen from previous chapter, common clustering methods such as *k-means* do not is designed for time series data and therefore may not function properly.
+In the previous chapter, the clustering analysis module was applied to static data whose features did not change over time. Today many applications store data for long periods of time. As a result, time-series data is created in various fields. Clustering can be applied to this time series to gain insight into the data. For example, retailers can group product sales time series to determine which products exhibit similar sales behavior. However, as seen from the previous chapter, common clustering methods such as *k-means* is not designed for time series data and therefore may not function properly.
 
-Next we address the limitations of the Euclidean distance when comparing time series and present alternatives that overcome these limitations.
+Next, we address the limitations of the Euclidean distance when comparing time series and present alternatives that overcome these limitations.
 
 ## Similarity Measure
 
 A common data mining task is the estimation of similarity among objects. A similarity measure is a relation between a pair of objects and a scalar number. Common intervals used to mapping the similarity are [-1, 1] or [0, 1], where 1 indicates the maximum of similarity.
 
-Common similarity functions used to perform complete or partial matches between time series are the cross-correlation function (or Pearson's correlation function) and the cosine angle between two vectors. The cross correlation between two time series $x$ and $y$ of length $n$, allowing a shifted comparison of $l$ positions, is defined as:
+Common similarity functions used to perform complete or partial matches between time series are the cross-correlation function (or Pearson's correlation function) and the cosine angle between two vectors. The cross-correlation between two time-series $x$ and $y$ of length $n$, allowing a shifted comparison of $l$ positions, is defined as:
 
-$$r_{XY}=\dfrac{\sum^n_{i=1}(x-\bar{X})(y-\bar{Y})}{\sqrt{\sum^n_{i=1}(x_i-\bar{X})^2} \sqrt{\sum^n_{i=1}(y_{i-1}-\bar{Y})^2}}$$
+$$r_{XY}=\dfrac{\sum^n_{i=1}(x-\bar{X})(y-\bar{Y})}{\sqrt{\sum^n_{i=1}(x_i-\bar{X})^2} \sqrt{\sum^n_{i=1}(y_{i}-\bar{Y})^2}}$$
 
-Where $\bar{X}$ and $\bar{Y}$ are the means of $X$ and $Y$. The correlation $\rho_{XY}$ provides the degree of linear dependence between the two vectors $X$ and $Y$ from perfect linear relationship ($\rho_{XY}$ = 1), to perfect negative linear relation ($\rho_{XY}$ = -1). [^1]
+where $\bar{X}$ and $\bar{Y}$ are the means of $X$ and $Y$. The correlation $\rho_{XY}$ provides the degree of linear dependence between the two vectors $X$ and $Y$ from perfect linear relationship ($\rho_{XY}$ = 1), to perfect negative linear relation ($\rho_{XY}$ = -1). [^1]
 
 ### Metric Distance
 
-Another way to compare time series data involves concept of distance measures. Let be two time series $T$ and $S$ vectors of length $n$, and $T_i$ and $S_i$ the $i$-th values of $T$ and $S$, respectively. Let us list the following distance measures. This subsection presents a list of distance functions used in Euclidean space[^1]. 
+Another way to compare time series data involves the concept of distance measures. Let be two time series $T$ and $S$ vectors of length $n$, and $T_i$ and $S_i$ the $i$-th values of $T$ and $S$, respectively. Let us list the following distance measures. This subsection presents a list of distance functions used in Euclidean space [^1]. 
 
 $$T = t_1, t_2, t_3, ...., t_i$$ 
 $$S = s_1, s_2, s_3, ...., s_i$$
@@ -137,35 +141,34 @@ If we want to compare two time series, we can use the Euclidean distance as foll
 
 $$ED(T,S) = \sqrt{\sum^n_{i=1}(t_i - s_i)^2}$$
 
-
 This distance measurement is visualized in the following figure:
 
 ```{r, out.width = "80%", echo = FALSE, fig.align = "center", fig.cap="$T$ and $S$ are two time series of a particular variable $v$, along the time axis $t$"}
 knitr::include_graphics("assets/euclidean.png")
 ```
 
-The Euclidean distance results in the sum of the point-to-point distances (gray lines), along all the time series. Euclidean distance present several drawbacks, that make inappropriate their use in certain applications:
+The Euclidean distance results in the sum of the point-to-point distances (gray lines), along with all the time series. Euclidean distance present several drawbacks, that make inappropriate their use in certain applications:
 
 - It compares only time series of the same length.
 - It doesn’t handle outliers or noise. 
 
 ### Dynamic Time Warping 
 
-Dynamic Time Warping (DTW) gives more robustness to the similarity computation. By this method, also time series of different length can be compared, because it replaces the one-to-one point comparison, used in Euclidean distance, with a many-to-one (and viceversa) comparison. The main feature of this distance measure is that it allows to recognize similar shapes, even if they present signal transformations, such as shifting and/or scaling. [^1]
+Dynamic Time Warping (DTW) gives more robustness to the similarity computation. By this method, also time series of different length can be compared, because it replaces the one-to-one point comparison, used in Euclidean distance, with a many-to-one (and vice-versa) comparison. The main feature of this distance measure is the ability to recognize similar shapes, even if they present signal transformations, such as shifting and/or scaling. [^1]
 
-> The idea to compare arrays with different length is to build one-to-many and many-to-one matches so that the total distance can be minimised between the two.
+> The idea of DTW is to compare arrays with different lengths to build one-to-many and many-to-one matches so that the total distance can be minimized between the two.
 
-Suppose we have two different arrays red and blue with different length:
+Suppose we have two red and blue time-series with different length:
 
 ```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="Difference between DTW distance and Euclidean distance"}
 knitr::include_graphics("assets/dtw-euclidean.png")
 ```
 
-Obviously these two sets follow the same pattern, but the blue curve is longer than red. If we apply the one-to-one match, shown in figure a above, the mapping is not perfectly synchronized and the blue curve tail is left out. DTW overcomes the issue by developing a one-to-many match so that the troughs and peaks with the same pattern are perfectly matched, and there is no left out for both curves(shown in the bottom top).
+These two time-series follow the same pattern, but the blue is longer than the red. If we apply the Euclidean (one-to-one) matching, the mapping is not perfectly synchronized and the blue curve tail is left out. DTW overcomes the issue by developing a one-to-many matching so that the troughs and peaks with the same pattern are perfectly matched, and there is no left out for both curves.
 
 **Rules:**
 
-In general, DTW is a method that calculates an optimal match between two given sequences (e.g. time series) with certain restriction and rules (*comes from wiki*):
+In general, DTW is a method that calculates an optimal match between two given sequences (e.g. time series) with certain restriction and rules (*References from Wiki*):
 
 - Every index from the first sequence must be matched with one or more indices from the other sequence and vice versa.
 - The first index from the first sequence must be matched with the first index from the other sequence (but it does not have to be its only match).
@@ -174,9 +177,9 @@ In general, DTW is a method that calculates an optimal match between two given s
 
 The optimal match is denoted by the match that satisfies all the restrictions and the rules and that has the minimal cost, where the cost is computed as the sum of absolute differences, for each matched pair of indices, between their values.
 
-#### [Optional] How DTW Algorithm work
+#### [Optional] DTW Algorithm
 
-Suppose we have two example time series data. 
+Suppose we have two example time series data: `series_a` and `series_b`. 
 
 ```{r}
 series_a <- c(1,6,2,3,0,9,4,3,6,3)
@@ -188,39 +191,43 @@ plot(series_a, type = "l", col = "red", lwd = 3)
 lines(series_b, col = "darkblue", lwd = 3)
 ```
 
-The basis of DTW is found on the computations of distance between two-time series. It can be shown in the below figure . Values of time series A has been plotted in the y axis and values of time series B has been plotted in the x axis. The best alignment is shown by the yellow area. To find the best alignment between A and B, we need to find the path through the grid. 
+The basis of DTW is on the computations of the distance between the two time-series, which illustrated by the figure below. Values of time series A has been plotted in the y-axis and values of time series B have been plotted in the x-axis. The best alignment is shown in the yellow area. To find the best alignment between A and B, we need to find the path through the grid. 
  
-```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="distance DTW"}
+```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="DTW Algorithm"}
 knitr::include_graphics("assets/distance-dtw.png")
 ```
 
+Here are the mathematical notation:
 
-- Start with the calculation of g(1,1) = d(1,1).
+- $i$: horizontal index (for time series b), starting from 1
+- $j$: vertical index (for time series a), starting from 1
+- $g(i,j)$: the grid value at index $i$ and $j$
+- $d(i,j)$: difference of time-series value at index $i$ and $j$
 
-```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="distance DTW"}
+1. Start with the calculation of $g(1,1) = d(1,1)$.
+
+```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="DTW Algorithm (Step 1)"}
 knitr::include_graphics("assets/step-dtw-1.png")
 ```
 
-- Calculate the first row g(i, 1) =g(i–1, 1) + d(i, 1).
-- Calculate the first column g(1, j) =g(1, j) + d(1, j).
+2. Calculate the first row $g(i, 1) = g(i–1, 1) + d(i, 1)$
+3. Calculate the first column $g(1, j) = g(1, j) + d(1, j)$
 
-```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="distance DTW"}
+```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="DTW Algorithm (Step 2 and 3)"}
 knitr::include_graphics("assets/step-dtw-2-3.png")
 ```
 
-- Move to the second row g(i, 2) = min(g(i, 1), g(i–1, 1), g(i –1, 2)) + d(i, 2). Book keep for each cell the index of this neighboring cell, which contributes the minimum score.
-- Carry on from left to right and from bottom to top with the rest of the grid g(i,j) = min(g(i, j–1), g(i–1, j–1), g(i –1, j)) + d(i, j).
+4. Move to the second row $g(i, 2) = min(g(i, 1),\ g(i–1, 1),\ g(i–1, 2)) + d(i, 2)$. Keep the value for each cell the index of this neighboring cell, which contributes the minimum score.
 
+5. Keep filling the values on the grid from left to right and bottom to top with the formula:  $g(i,j) = min(g(i, j–1),\ g(i–1, j–1),\ g(i–1, j)) + d(i, j)$
 
-```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="distance DTW"}
+```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="DTW Algorithm (Step 4 and 5)"}
 knitr::include_graphics("assets/step-dtw-4-5.png")
 ```
 
-- Trace back the best path through the grid starting from g(n, m) and moving towards g(1,1) and we get a yellow area.
+6. Trace back the best path through the grid starting from $g(n, m)$ towards $g(1,1)$ and we get a yellow area. We can conclude that the distance between time series a and b is $g(n, m) = 15$.
 
-
-
-```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="distance DTW"}
+```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="DTW Algorithm (Step 6)"}
 knitr::include_graphics("assets/step-dtw-6.png")
 ```
 
@@ -228,7 +235,7 @@ knitr::include_graphics("assets/step-dtw-6.png")
 
 ### Read Data
 
-The data is provided by [**Chicago Taxi Data**](https://data.cityofchicago.org/Transportation/Taxi-Trips/wrvz-psew). Each row in the dataset describes a distinct taxi trip and shows:
+The data is collected from [**Chicago Taxi Data**](https://data.cityofchicago.org/Transportation/Taxi-Trips/wrvz-psew). Each row in the dataset describes a distinct taxi trip and shows:
 
 - Which taxi provided the trip
 - What times the trip started and ended
@@ -238,7 +245,7 @@ The data is provided by [**Chicago Taxi Data**](https://data.cityofchicago.org/T
 - Type of payment — such as cash or credit card. (As an important note, cash tips are not included in the data because they do not go through the payment systems.)
 - Taxi company
 
-But in this analysis we will only focus on two column information, the date of each trip `trip_start` and pickup area `picking_community_area`. 
+But in this analysis, we will only focus on two columns; the date of each trip `trip_start_timestamp` and pickup area `pickup_community_area`.
 
 ```{r}
 df <- readRDS("data/taxy_cgg.RDS")
@@ -247,22 +254,23 @@ glimpse(df)
 
 ### Data Preprocessing    
 
-We have to prepare the data first. One of the common problems we faced in Data Preparation is handling the missing value (`NA`). In this case we will remove all data for an observation that has missing value on `pickuip_community_area`. Then we consider to *rounding* our data into `year-month` format and doing *date padding* to the further analysis. Here I give you the example of time series padding:
+We have to prepare the data first. One of the common problems we faced in Data Preparation is handling the missing value (`NA`). In this case, we will remove all data for an observation that has missing value on `pickup_community_area`. Then we consider *rounding* our data into `year-month` format and doing *date padding* to the further analysis. Here I give you the example of time series padding:
 
 ```{r}
-n_order_example <- data.frame(day = as.Date(c('2016-10-21', '2016-10-23', '2016-10-26')),
-                      order = c(304.46, 414.76, 378.98))
+n_order_example <- data.frame(
+  day = as.Date(c('2016-10-21', '2016-10-23', '2016-10-26')),
+  order = c(304.46, 414.76, 378.98))
 
 n_order_example
 ```
 
-we will use `pad` function to insert a missing date information from our data series. the function will notices that within the interval, day in this case, rows are lacking between the first and last observation. It inserts a row in the data frame for every time point that is lacking from the data set. All non-datetime values will get missing values at the padded rows.
+We will use the `pad` function to insert missing date information from our data series. the function will notices that within the day interval, in this case, rows are lacking between the first and last observation. It inserts a row in the data frame for every time point that is lacking from the data set. All non-datetime values will get missing values at the padded rows.
 
 ```{r}
 pad(n_order_example)
 ```
 
-Also we need to calculate the number of order in each `trip_start` and `picking_community_area`. To make it more concise, here are some of the things that are required for data preparation.
+We need to calculate the number of orders in each `trip_start` and `picking_community_area`. To make it more concise, here is the quick summary for the data preparation step:
 
 - Remove NA `pickup_community_area`
 - Consider monthly `trip_order`
@@ -341,7 +349,7 @@ In the picture above, the two `pickup_community_area` (8 & 32), which were origi
 
 ### Calculate Distance Matrix
 
-Next, we create a custom function for calculating the distance matrix. The defined input argument is, `mat`, which is the scaled time series matrix. `method` is the calculation approaches used, which is in this case will be compared euclidean and dynamic time warping distance. The result output is a heat map matrix for each area. The redder the color, the two areas are close together, so we can say the pattern is almost similar.
+Next, we create a custom function for calculating the distance matrix. The defined input argument is `mat`, which is the scaled time series matrix. `method` is the calculation approaches used, which is in this case will be compared euclidean and dynamic time warping distance. The result output is a heat map matrix for each area. The redder the color, the two areas are similar to each other, so we can say the pattern is almost similar.
 
 ```{r}
 distance_matrix <- function(mat, method, dendrogram = F){
@@ -363,14 +371,14 @@ dtw <- distance_matrix(t(order_scaled), "DTWARP")
 
 # Hierarchical Clustering
 
-On the Unsupervised Learning course, we have seen that the results of using the K-means clustering algorithm depends on the pre-specified number of clusters K and random starting cluster assignment. In contrast, hierarchical clustering doesn't require such specifications - It is a **deterministic** approach which produces the same clustering each time. Instead, we have to specify a measure of pairwise dissimilarity (or **distance matrix**) between observations in two groups. Euclidean distance is commonly used because it is intuitive to humans, but it is possible to use other distance matrix depending on the case. We will also tackle other type of distance namely Dynamic Time Warping.
+On the Unsupervised Learning course, we have seen that the results of using the K-means clustering algorithm depends on the pre-specified number of clusters K and random starting cluster assignment. In contrast, hierarchical clustering doesn't require such specifications - It is a **deterministic** approach which produces the same clustering each time. Instead, we have to specify a measure of pairwise dissimilarity (or **distance matrix**) between observations in two groups. Euclidean distance is commonly used because it is intuitive to humans, but it is possible to use other distance matrix depending on the case. We will also compare the clustering result using Dynamic Time Warping.
 
 As the name suggests, hierarchical clustering outputs an attractive tree-based representation of the observations, called **dendrogram**. This provides a highly interpretable complete description of the clustering in a graphical format. On dendrogram, the clusters at each level of the hierarchy are created by merging clusters at the next lower level, where:
 
 - At the lowest level (often referred as the leaves), each observation is treated as single cluster.
 - At the highest level (often referred as the trunk), there is only one cluster containing all observations.
 
-```{r, out.width = "80%", echo = FALSE, fig.align = "center", fig.cap="Dendogram [^2]"}
+```{r, out.width = "80%", echo = FALSE, fig.align = "center", fig.cap="Dendrogram [^2]"}
 knitr::include_graphics("assets/dendrogram.png")
 ```
 
@@ -385,7 +393,7 @@ We are going to focus more on AGNES since it is the most common type of hierarch
 
 AGNES is a bottom-up approach of hierarchical clustering. The algorithm is in fact very simple, it begins with every observation as a single cluster, we can refer to this state as the leaves on the dendrogram. Let $N$ be the number of observations. At each of the $N-1$ steps, the closest two (or the least dissimilar) clusters will be merged as a single cluster - producing one less cluster.
 
-Before any further concept, let's compare the result of Agglomerative clustering using Euclidean versus Dynamic Time Warping. We use [`agnes()`](https://www.rdocumentation.org/packages/cluster/versions/2.1.0/topics/agnes) function from `cluster` package. The default linkage method is "average", we will discuss this concept later on this course. Dendogram can be plotted by specifying the parameter `which.plots = 2` inside `plot()` function. Note: we can alternatively use [`hclust()`](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/hclust) from `stats` package that should produce the same clusters.
+Before any further concept, let's compare the result of Agglomerative clustering using Euclidean versus Dynamic Time Warping. We use [`agnes()`](https://www.rdocumentation.org/packages/cluster/versions/2.1.0/topics/agnes) function from `cluster` package. The default linkage method is "average", we will discuss this concept later on this course. Dendrogram can be plotted by specifying the parameter `which.plots = 2` inside `plot()` function. Note: we can alternatively use [`hclust()`](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/hclust) from `stats` package that should produce the same clusters.
 
 ```{r fig.width=18, fig.height=12}
 par(mfrow = c(1, 2))
@@ -478,7 +486,7 @@ dtw_diana <- diana(dtw)
 plot(dtw_diana, main = "DTW Divisive", which.plots = 2)
 ```
 
-From the plot above, the choice of algorithm also affects the resulting dendogram, but not much. Just like AGNES, to measure the compactness of the clustering structure for DIANA we can use **Divisive Coefficient**.
+From the plot above, the choice of algorithm also affects the resulting dendrogram, but not much. Just like AGNES, to measure the compactness of the clustering structure for DIANA we can use **Divisive Coefficient**.
 
 ### Divisive Coefficient (DC)
 
@@ -495,7 +503,7 @@ plot(dtw_diana, which.plots = 1, nmax.lab = Inf)
 
 Could you tell what is the main difference between the banner plots of Agglomerative and Divisive? How do we interpret the red bars of the Divisive algorithm? Then by considering the coefficient, which one should we choose in this case?
 
-## Working with Dendograms
+## Working with Dendrograms
 
 At this point, you might be wondering how we can get the cluster results from the hierarchical clustering. Though the algorithm provides us a fully connected dendrogram, we need to specify a parameter on how we can "cut" the tree in order to get clustered data. Let's say from the business perspective, we want to group `order_scaled` data into two distinct clusters. Take a look of the visualization below, where the red dotted horizontal line indicates the cut level.
 
@@ -648,11 +656,16 @@ dend_viz <- color_branches(as.hclust(dtw_agnes_complete), k = 3)
 plot(dend_viz)
 ```
 
-Create a `cluster_mapping` dataframe which maps individual `pickup_community_area` to a `cluster` number.
+Let's identify how many `pickup_community_area` belongs to each clusters:
 
 ```{r}
 final_cluster <- cutree(as.hclust(dtw_agnes_complete), k = 3)
+table(final_cluster)
+```
 
+We also can create a `cluster_mapping` which maps individual `pickup_community_area` to a `cluster` number as follows:
+
+```{r}
 cluster_mapping <-
   rownames_to_column(as.data.frame(final_cluster),
                      var = "pickup_community_area") %>% 
@@ -661,7 +674,7 @@ cluster_mapping <-
 cluster_mapping
 ```
 
-Let's visualize the final clustered time series, plotted with its mean `total_order` in each cluster.
+Finally, the clustered time series can be visualized using `ggplot2`, which also plotted with its sum of `total_order` in each cluster.
 
 ```{r}
 clustered_order_agnes <-
@@ -675,12 +688,16 @@ ggplot(data = clustered_order_agnes,
   geom_line() +
   geom_line(data = clustered_order_agnes %>%
               group_by(cluster, trip_start) %>%
-              summarize(total_order = mean(total_order)),
+              summarize(total_order = sum(total_order)),
             aes(group=1), alpha = 0.7, lwd = 2) +
   facet_grid(rows = vars(cluster), scales = 'free')
 ```
 
-(insights...)
+There are distinct patterns for each clusters:
+
+- The `pickup_community_area` in the first cluster has a small number of `total_order` and not too fluctuative.  
+- The second cluster has the smallest number of `total_order` and is very likely to have zero `total_order`in a month.
+- The third cluster is the most prominent and consistent area in terms of `total_order`.
 
 # Key Takeaways
 
@@ -691,7 +708,7 @@ Clustering is a very useful tool for data analysis in the unsupervised setting. 
 - In case of hierarchical clustering:
     + What type of dissimilarity or distance should be used?
     + what type of linkage should be used?
-    + At which level should the dendogram be cut?
+    + At which level should the dendrogram be cut?
 - How we evaluate the clustering in order to get optimal number of clusters?
 
 Every of those decisions can affect how the results are obtained. In real practice, we do trial-and-error and look for the one with the most interpretable solution. There is no single right answer - the "one-size-fits-all" method. [^6]
