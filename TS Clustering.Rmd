@@ -122,15 +122,23 @@ A common data mining task is the estimation of similarity among objects. A simil
 
 Common similarity functions used to perform complete or partial matches between time series are the cross-correlation function (or Pearson's correlation function) and the cosine angle between two vectors. The cross correlation between two time series $x$ and $y$ of length $n$, allowing a shifted comparison of $l$ positions, is defined as:
 
-> insert equation pearson correlation
+$$r_{XY}=\dfrac{\sum^n_{i=1}(x-\bar{X})(y-\bar{Y})}{\sqrt{\sum^n_{i=1}(x_i-\bar{X})^2} \sqrt{\sum^n_{i=1}(y_{i-1}-\bar{Y})^2}}$$
 
 Where $\bar{X}$ and $\bar{Y}$ are the means of $X$ and $Y$. The correlation $\rho_{XY}$ provides the degree of linear dependence between the two vectors $X$ and $Y$ from perfect linear relationship ($\rho_{XY}$ = 1), to perfect negative linear relation ($\rho_{XY}$ = -1). [^1]
 
 ### Metric Distance
 
-Another way to compare time series data involves concept of distance measures. Let be two time series $T$ and $S$ vectors of length $n$, and $T_i$ and $S_i$ the $i$-th values of $T$ and $S$, respectively. Let us list the following distance measures. This subsection presents a list of distance functions used in Euclidean space. 
+Another way to compare time series data involves concept of distance measures. Let be two time series $T$ and $S$ vectors of length $n$, and $T_i$ and $S_i$ the $i$-th values of $T$ and $S$, respectively. Let us list the following distance measures. This subsection presents a list of distance functions used in Euclidean space[^1]. 
 
-> insert equation euclidean distance
+$$T = t_1, t_2, t_3, ...., t_i$$ 
+$$S = s_1, s_2, s_3, ...., s_i$$
+
+If we want to compare two time series, we can use the Euclidean distance as follows:
+
+$$ED(T,S) = \sqrt{\sum^n_{i=1}(t_i - s_i)^2}$$
+
+
+This distance measurement is visualized in the following figure:
 
 ```{r, out.width = "80%", echo = FALSE, fig.align = "center", fig.cap="$T$ and $S$ are two time series of a particular variable $v$, along the time axis $t$"}
 knitr::include_graphics("assets/euclidean.png")
@@ -145,16 +153,76 @@ The Euclidean distance results in the sum of the point-to-point distances (gray 
 
 Dynamic Time Warping (DTW) gives more robustness to the similarity computation. By this method, also time series of different length can be compared, because it replaces the one-to-one point comparison, used in Euclidean distance, with a many-to-one (and viceversa) comparison. The main feature of this distance measure is that it allows to recognize similar shapes, even if they present signal transformations, such as shifting and/or scaling. [^1]
 
-```{r, out.width = "80%", echo = FALSE, fig.align = "center", fig.cap="Difference between DTW distance and Euclidean distance (green lines represent mapping between points of time series $T$ and $S$)"}
+> The idea to compare arrays with different length is to build one-to-many and many-to-one matches so that the total distance can be minimised between the two.
+
+Suppose we have two different arrays red and blue with different length:
+
+```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="Difference between DTW distance and Euclidean distance"}
 knitr::include_graphics("assets/dtw-euclidean.png")
 ```
 
-In general, DTW is a method that calculates an optimal match between two given sequences (e.g. time series) with certain restriction and rules (comes from wiki):
+Obviously these two sets follow the same pattern, but the blue curve is longer than red. If we apply the one-to-one match, shown in figure a above, the mapping is not perfectly synchronized and the blue curve tail is left out. DTW overcomes the issue by developing a one-to-many match so that the troughs and peaks with the same pattern are perfectly matched, and there is no left out for both curves(shown in the bottom top).
+
+**Rules:**
+
+In general, DTW is a method that calculates an optimal match between two given sequences (e.g. time series) with certain restriction and rules (*comes from wiki*):
 
 - Every index from the first sequence must be matched with one or more indices from the other sequence and vice versa.
 - The first index from the first sequence must be matched with the first index from the other sequence (but it does not have to be its only match).
 - The last index from the first sequence must be matched with the last index from the other sequence (but it does not have to be its only match).
 - The mapping of the indices from the first sequence to indices from the other sequence must be monotonically increasing, and vice versa, i.e. if $j > i$ are indices from the first sequence, then there must not be two indices $l > k$ in the other sequence, such that index $i$ is matched with index $l$ and index $j$ is matched with index $k$, and vice versa.
+
+The optimal match is denoted by the match that satisfies all the restrictions and the rules and that has the minimal cost, where the cost is computed as the sum of absolute differences, for each matched pair of indices, between their values.
+
+#### [Optional] How DTW Algorithm work
+
+Suppose we have two example time series data. 
+
+```{r}
+series_a <- c(1,6,2,3,0,9,4,3,6,3)
+series_b <- c(1,3,4,9,8,2,1,5,7,3)
+```
+
+```{r}
+plot(series_a, type = "l", col = "red", lwd = 3)
+lines(series_b, col = "darkblue", lwd = 3)
+```
+
+The basis of DTW is found on the computations of distance between two-time series. It can be shown in the below figure . Values of time series A has been plotted in the y axis and values of time series B has been plotted in the x axis. The best alignment is shown by the yellow area. To find the best alignment between A and B, we need to find the path through the grid. 
+ 
+```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="distance DTW"}
+knitr::include_graphics("assets/distance-dtw.png")
+```
+
+
+- Start with the calculation of g(1,1) = d(1,1).
+
+```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="distance DTW"}
+knitr::include_graphics("assets/step-dtw-1.png")
+```
+
+- Calculate the first row g(i, 1) =g(i–1, 1) + d(i, 1).
+- Calculate the first column g(1, j) =g(1, j) + d(1, j).
+
+```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="distance DTW"}
+knitr::include_graphics("assets/step-dtw-2-3.png")
+```
+
+- Move to the second row g(i, 2) = min(g(i, 1), g(i–1, 1), g(i –1, 2)) + d(i, 2). Book keep for each cell the index of this neighboring cell, which contributes the minimum score.
+- Carry on from left to right and from bottom to top with the rest of the grid g(i,j) = min(g(i, j–1), g(i–1, j–1), g(i –1, j)) + d(i, j).
+
+
+```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="distance DTW"}
+knitr::include_graphics("assets/step-dtw-4-5.png")
+```
+
+- Trace back the best path through the grid starting from g(n, m) and moving towards g(1,1) and we get a yellow area.
+
+
+
+```{r, out.width = "70%", echo = FALSE, fig.align = "center", fig.cap="distance DTW"}
+knitr::include_graphics("assets/step-dtw-6.png")
+```
 
 ## Application of Time Series Clustering
 
@@ -170,7 +238,7 @@ The data is provided by [**Chicago Taxi Data**](https://data.cityofchicago.org/T
 - Type of payment — such as cash or credit card. (As an important note, cash tips are not included in the data because they do not go through the payment systems.)
 - Taxi company
 
-But in this analysis we will only focus on two column information, namely the date of each trip `trip_start` and pickup area `picking_community_area`. 
+But in this analysis we will only focus on two column information, the date of each trip `trip_start` and pickup area `picking_community_area`. 
 
 ```{r}
 df <- readRDS("data/taxy_cgg.RDS")
@@ -223,6 +291,8 @@ agg_pad
 
 ### Exploratory Data Analysis
 
+After making sure the data is ready, we do an exploratory data analysis for the historical number of orders for each area. We can give consideration visually, which areas have almost similar historical patterns.
+
 ```{r}
 ts_ggplot <-
   ggplot(agg_pad, 
@@ -251,7 +321,7 @@ order <-
 head(order)
 ```
 
-In the pre-processing stage, especially in calculations similarity between data, it's a good way to normalize all the variables to bring them down to a similar scale. So we can compare two series patterns, instead of looking at their true values. To make it clear, please ...
+In the pre-processing stage, especially in calculations similarity between data, it's a good way to normalize all the variables to bring them down to a similar scale. So we can compare two series patterns, instead of looking at their true values. To make it clear, please see the following breakdown:
 
 ```{r}
 order_scaled <- scale(order)
@@ -271,11 +341,11 @@ In the picture above, the two `pickup_community_area` (8 & 32), which were origi
 
 ### Calculate Distance Matrix
 
+Next, we create a custom function for calculating the distance matrix. The defined input argument is, `mat`, which is the scaled time series matrix. `method` is the calculation approaches used, which is in this case will be compared euclidean and dynamic time warping distance. The result output is a heat map matrix for each area. The redder the color, the two areas are close together, so we can say the pattern is almost similar.
+
 ```{r}
 distance_matrix <- function(mat, method, dendrogram = F){
   dm <- diss(SERIES = mat, METHOD = method)
-  
-  print(summary(dm))
   heatmap.2(as.matrix(dm), trace = "none",
             Colv = dendrogram, Rowv = dendrogram)
   
